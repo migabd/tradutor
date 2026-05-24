@@ -9,6 +9,15 @@ from pydantic import BaseModel
 from google import genai
 from utils.dubber import VideoDubber
 
+# Self-upgrade yt-dlp to the absolute latest version on start to ensure YouTube changes are always supported
+try:
+    import subprocess
+    import sys
+    print("Verificando e atualizando yt-dlp em segundo plano...")
+    subprocess.Popen([sys.executable, "-m", "pip", "install", "-U", "yt-dlp"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+except Exception as e:
+    print(f"Aviso: Não foi possível atualizar o yt-dlp em segundo plano: {e}")
+
 app = FastAPI(title="Dublador IA Youtube", description="Dublagem automática de vídeos do YouTube usando Gemini 2.0")
 
 # Setup paths
