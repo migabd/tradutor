@@ -52,6 +52,61 @@ document.addEventListener("DOMContentLoaded", () => {
         loadModels(savedKey);
     }
 
+    const defaultFallbackModels = [
+        { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash", description: "Modelo padrão mais recente, rápido e inteligente" },
+        { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash", description: "Excelente equilíbrio entre velocidade e qualidade" },
+        { id: "gemini-2.0-flash-lite", name: "Gemini 2.0 Flash-Lite", description: "Velocidade ultrarrápida com baixo consumo" },
+        { id: "gemini-2.0-pro-exp-02-05", name: "Gemini 2.0 Pro Experimental", description: "Alta performance para tarefas complexas" },
+        { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash", description: "Modelo rápido para tarefas gerais" },
+        { id: "gemini-1.5-pro", name: "Gemini 1.5 Pro", description: "Inteligência para raciocínio complexo" }
+    ];
+
+    function renderModels(modelsList) {
+        if (!modelsList || modelsList.length === 0) return;
+        
+        // Clear select options
+        modelSelect.innerHTML = "";
+        
+        modelsList.forEach(model => {
+            const opt = document.createElement("option");
+            opt.value = model.id;
+            
+            // Format display name nicely
+            let displayName = model.name;
+            if (model.id === "gemini-2.0-flash" || model.id === "gemini-2.5-flash") {
+                displayName += " ⭐";
+            } else if (model.id === "gemini-2.0-flash-lite") {
+                displayName += " ⚡";
+            }
+            
+            opt.textContent = `${displayName} (${model.id})`;
+            modelSelect.appendChild(opt);
+        });
+        
+        // Add custom option at the end
+        const customOpt = document.createElement("option");
+        customOpt.value = "custom";
+        customOpt.textContent = "Outro Modelo (Digitar ID...)";
+        modelSelect.appendChild(customOpt);
+        
+        // Set default or restore previous selection
+        const prevModel = localStorage.getItem("selected_gemini_model") || "gemini-2.5-flash";
+        // Check if prevModel exists in options
+        let exists = Array.from(modelSelect.options).some(opt => opt.value === prevModel);
+        if (exists) {
+            modelSelect.value = prevModel;
+        } else if (prevModel && prevModel !== "gemini-2.5-flash" && prevModel !== "gemini-2.0-flash" && prevModel !== "gemini-2.0-flash-lite" && prevModel !== "custom") {
+            // It was a custom model, select custom option and show input
+            modelSelect.value = "custom";
+            customModelInput.value = prevModel;
+            customModelWrapper.classList.remove("hidden");
+        } else {
+            // Check if 2.5-flash is present, default to it, otherwise 2.0-flash
+            const has2_5 = Array.from(modelSelect.options).some(opt => opt.value === "gemini-2.5-flash");
+            modelSelect.value = has2_5 ? "gemini-2.5-flash" : "gemini-2.0-flash";
+        }
+    }
+
     async function loadModels(apiKey) {
         if (!apiKey) return;
         
@@ -67,49 +122,14 @@ document.addEventListener("DOMContentLoaded", () => {
             
             const data = await response.json();
             if (data.models && data.models.length > 0) {
-                // Clear select options
-                modelSelect.innerHTML = "";
-                
-                data.models.forEach(model => {
-                    const opt = document.createElement("option");
-                    opt.value = model.id;
-                    
-                    // Format display name nicely
-                    let displayName = model.name;
-                    if (model.id === "gemini-2.0-flash") {
-                        displayName += " ⭐";
-                    } else if (model.id === "gemini-2.0-flash-lite") {
-                        displayName += " ⚡";
-                    }
-                    
-                    opt.textContent = `${displayName} (${model.id})`;
-                    modelSelect.appendChild(opt);
-                });
-                
-                // Add custom option at the end
-                const customOpt = document.createElement("option");
-                customOpt.value = "custom";
-                customOpt.textContent = "Outro Modelo (Digitar ID...)";
-                modelSelect.appendChild(customOpt);
-                
-                // Set default or restore previous selection
-                const prevModel = localStorage.getItem("selected_gemini_model") || "gemini-2.0-flash";
-                // Check if prevModel exists in options
-                let exists = Array.from(modelSelect.options).some(opt => opt.value === prevModel);
-                if (exists) {
-                    modelSelect.value = prevModel;
-                } else if (prevModel && prevModel !== "gemini-2.0-flash" && prevModel !== "gemini-2.0-flash-lite" && prevModel !== "custom") {
-                    // It was a custom model, select custom option and show input
-                    modelSelect.value = "custom";
-                    customModelInput.value = prevModel;
-                    customModelWrapper.classList.remove("hidden");
-                } else {
-                    modelSelect.value = "gemini-2.0-flash";
-                }
+                renderModels(data.models);
+            } else {
+                renderModels(defaultFallbackModels);
             }
         } catch (err) {
             console.error("Error loading models:", err);
-            showToast("Não foi possível listar todos os modelos. Usando os modelos padrão.", "info");
+            renderModels(defaultFallbackModels);
+            showToast("Não foi possível listar todos os modelos do servidor. Usando os modelos padrão.", "info");
         }
     }
 
@@ -167,8 +187,20 @@ document.addEventListener("DOMContentLoaded", () => {
     modelSelect.addEventListener("change", () => {
         if (modelSelect.value === "custom") {
             customModelWrapper.classList.remove("hidden");
+            const customVal = customModelInput.value.trim();
+            if (customVal) {
+                localStorage.setItem("selected_gemini_model", customVal);
+            }
         } else {
             customModelWrapper.classList.add("hidden");
+            localStorage.setItem("selected_gemini_model", modelSelect.value);
+        }
+    });
+
+    customModelInput.addEventListener("input", () => {
+        const val = customModelInput.value.trim();
+        if (val) {
+            localStorage.setItem("selected_gemini_model", val);
         }
     });
 

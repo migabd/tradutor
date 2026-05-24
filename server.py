@@ -61,40 +61,62 @@ async def list_models(x_gemini_key: str = Header(None, alias="X-Gemini-Key")):
     """List all available Gemini models for the provided API key."""
     if not x_gemini_key:
         raise HTTPException(status_code=400, detail="Gemini API Key é obrigatória.")
+        
+    # Standard popular models to guarantee the user always has a rich list
+    default_models = [
+        {"id": "gemini-2.5-flash", "name": "Gemini 2.5 Flash", "description": "Modelo padrão mais recente, rápido e inteligente (Recomendado)"},
+        {"id": "gemini-2.0-flash", "name": "Gemini 2.0 Flash", "description": "Excelente equilíbrio entre velocidade e qualidade"},
+        {"id": "gemini-2.0-flash-lite", "name": "Gemini 2.0 Flash-Lite", "description": "Velocidade ultrarrápida com baixo consumo de recursos"},
+        {"id": "gemini-2.0-pro-exp-02-05", "name": "Gemini 2.0 Pro (Experimental)", "description": "Modelo experimental de alta performance para tarefas complexas"},
+        {"id": "gemini-1.5-pro", "name": "Gemini 1.5 Pro", "description": "Altíssima inteligência para raciocínio complexo"},
+        {"id": "gemini-1.5-flash", "name": "Gemini 1.5 Flash", "description": "Modelo rápido e versátil para tarefas gerais"},
+    ]
+    
     try:
         client = genai.Client(api_key=x_gemini_key)
-        models = []
+        api_models = []
         for m in client.models.list():
             name = m.name
             display_id = name.replace("models/", "") if name.startswith("models/") else name
             
             # Filter for models containing 'gemini'
             if "gemini" in display_id.lower():
-                models.append({
+                api_models.append({
                     "id": display_id,
                     "name": m.display_name or display_id,
                     "description": m.description or ""
                 })
         
-        # Prioritize 2.0-flash, then 2.0-flash-lite, then 2.0, 1.5-pro, 1.5-flash
-        def sort_key(model):
-            mid = model["id"].lower()
-            if "gemini-2.0-flash" in mid and "lite" not in mid:
-                return (0, mid)
-            elif "gemini-2.0-flash-lite" in mid:
-                return (1, mid)
-            elif "gemini-2.0" in mid:
-                return (2, mid)
-            elif "gemini-1.5-pro" in mid:
-                return (3, mid)
-            elif "gemini-1.5-flash" in mid:
-                return (4, mid)
-            return (5, mid)
-            
-        models.sort(key=sort_key)
-        return {"models": models}
+        # Merge API models with defaults to avoid duplicates
+        existing_ids = {m["id"] for m in default_models}
+        for model in api_models:
+            if model["id"] not in existing_ids:
+                default_models.append(model)
+                existing_ids.add(model["id"])
+                
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # If API listing fails, we log it and continue using our beautiful default list
+        print(f"Aviso: Erro ao obter modelos da API Gemini ({e}). Usando lista padrão de fallback.")
+        
+    # Sort the models nicely
+    def sort_key(model):
+        mid = model["id"].lower()
+        if "gemini-2.5-flash" in mid:
+            return (0, mid)
+        elif "gemini-2.0-flash" in mid and "lite" not in mid:
+            return (1, mid)
+        elif "gemini-2.0-flash-lite" in mid:
+            return (2, mid)
+        elif "gemini-2.0" in mid:
+            return (3, mid)
+        elif "gemini-1.5-pro" in mid:
+            return (4, mid)
+        elif "gemini-1.5-flash" in mid:
+            return (5, mid)
+        return (6, mid)
+        
+    default_models.sort(key=sort_key)
+    return {"models": default_models}
 
 
 @app.post("/api/dub")
