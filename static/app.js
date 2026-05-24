@@ -7,6 +7,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const saveKeyBtn = document.getElementById("save-key-btn");
     const keyStatusMsg = document.getElementById("key-status-msg");
     const youtubeUrlInput = document.getElementById("youtube-url");
+    const modelSelect = document.getElementById("model-select");
+    const customModelWrapper = document.getElementById("custom-model-wrapper");
+    const customModelInput = document.getElementById("custom-model");
     const voiceSelect = document.getElementById("voice-select");
     const audioDuckingInput = document.getElementById("audio-ducking");
     const startDubbingBtn = document.getElementById("start-dubbing-btn");
@@ -94,12 +97,30 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    // Model selection custom input toggle
+    modelSelect.addEventListener("change", () => {
+        if (modelSelect.value === "custom") {
+            customModelWrapper.classList.remove("hidden");
+        } else {
+            customModelWrapper.classList.add("hidden");
+        }
+    });
+
     // Start Dubbing Pipeline
     startDubbingBtn.addEventListener("click", async () => {
         const apiKey = localStorage.getItem("gemini_api_key") || apiKeyInput.value.trim();
         const url = youtubeUrlInput.value.trim();
+        let model = modelSelect.value;
         const voice = voiceSelect.value;
         const ducking = audioDuckingInput.checked;
+
+        if (model === "custom") {
+            model = customModelInput.value.trim();
+            if (!model) {
+                showToast("Por favor, insira o ID do modelo Gemini personalizado.", "danger");
+                return;
+            }
+        }
 
         if (!apiKey) {
             showToast("Por favor, configure e salve sua Gemini API Key antes de começar.", "danger");
@@ -129,7 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     "Content-Type": "application/json",
                     "X-Gemini-Key": apiKey
                 },
-                body: JSON.stringify({ url, voice, ducking })
+                body: JSON.stringify({ url, voice, ducking, model })
             });
 
             if (!response.ok) {

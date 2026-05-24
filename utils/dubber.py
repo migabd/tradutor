@@ -30,9 +30,10 @@ class TranscriptionResult(BaseModel):
     segments: List[Segment]
 
 class VideoDubber:
-    def __init__(self, api_key: str, workspace_dir: str = "."):
+    def __init__(self, api_key: str, workspace_dir: str = ".", model_name: str = "gemini-2.0-flash"):
         self.client = genai.Client(api_key=api_key)
         self.workspace = Path(workspace_dir).absolute()
+        self.model_name = model_name
         self.tasks_dir = self.workspace / "tasks"
         self.tasks_dir.mkdir(parents=True, exist_ok=True)
 
@@ -54,6 +55,7 @@ class VideoDubber:
             "status": status,
             "progress": progress,
             "message": message,
+            "model_name": self.model_name,
             "updated_at": time.time()
         })
         if error:
@@ -161,7 +163,7 @@ class VideoDubber:
             """
             
             response = self.client.models.generate_content(
-                model='gemini-2.0-flash',
+                model=self.model_name,
                 contents=[audio_file, prompt],
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
@@ -197,7 +199,7 @@ class VideoDubber:
         prompt = f"Diga o seguinte texto em português do Brasil com entonação natural, sem adicionar qualquer comentário ou introdução: {text}"
         
         response = self.client.models.generate_content(
-            model='gemini-2.0-flash',
+            model=self.model_name,
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_modalities=["AUDIO"],

@@ -26,6 +26,7 @@ class DubRequest(BaseModel):
     url: str
     voice: str = "Puck"  # Puck, Charon, Aoede, Fenrir, Kore
     ducking: bool = True
+    model: str = "gemini-2.0-flash"
 
 class RegenerateRequest(BaseModel):
     task_id: str
@@ -67,7 +68,7 @@ async def start_dubbing(
     task_id = str(uuid.uuid4())
     
     # Initialize the dubber
-    dubber = VideoDubber(api_key=x_gemini_key, workspace_dir=str(WORKSPACE))
+    dubber = VideoDubber(api_key=x_gemini_key, workspace_dir=str(WORKSPACE), model_name=req.model)
     
     # Write initial progress status
     dubber._update_status(task_id, "processing", 5, "Iniciando a tarefa de dublagem...")
@@ -100,10 +101,19 @@ async def regenerate_segment(
     x_gemini_key: str = Header(None, alias="X-Gemini-Key")
 ):
     """Regenerate a single dubbing segment and update the dubbed video in the background."""
-    if not x_gemini_key:
-        raise HTTPException(status_code=400, detail="Gemini API Key é obrigatória.")
-        
-    dubber = VideoDubber(api_key=x_gemini_key, workspace_dir=str(WORKSPACE))
+    # Read the task's model_name if available, default to gemini-2.0-flash
+    model_name = "gemini-2.0-flash"
+    try:
+        import json
+        task_file = TASKS_DIR / f"{req.task_id}.json"
+        if task_file.exists():
+            with open(task_file, "r", encoding="utf-8") as f:
+                task_data = json.load(f)
+                model_name = task_data.get("model_name", "gemini-2.0-flash")
+    except Exception:
+        pass
+
+    dubber = VideoDubber(api_key=x_gemini_key, workspace_dir=str(WORKSPACE), model_name=model_name)
     
     # Trigger regeneration in background to avoid client timeout
     background_tasks.add_task(
