@@ -52,9 +52,16 @@ async def check_key(req: KeyCheckRequest):
         if response.text:
             return {"valid": True}
         else:
-            return {"valid": False, "error": "Resposta vazia do modelo."}
+            return {"valid": True, "warning": "Chave aceita, mas a resposta do modelo foi vazia."}
     except Exception as e:
-        return {"valid": False, "error": str(e)}
+        error_msg = str(e)
+        # If the error is a quota/rate limit error, the key IS valid (authenticated successfully by Google, but out of quota)
+        if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg or "quota" in error_msg.lower():
+            return {
+                "valid": True, 
+                "warning": "Sua chave de API é válida, mas atingiu temporariamente o limite de cota do Gemini (Erro 429: Resource Exhausted). Você poderá usá-la assim que o limite de tempo expirar."
+            }
+        return {"valid": False, "error": error_msg}
 
 @app.get("/api/models")
 async def list_models(x_gemini_key: str = Header(None, alias="X-Gemini-Key")):

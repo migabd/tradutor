@@ -161,9 +161,15 @@ document.addEventListener("DOMContentLoaded", () => {
             if (data.valid) {
                 localStorage.setItem("gemini_api_key", apiKey);
                 keyStatusMsg.style.display = "block";
-                keyStatusMsg.textContent = "Chave de API válida!";
-                keyStatusMsg.style.color = "var(--accent-success)";
-                showToast("Chave de API validada e salva com sucesso!", "success");
+                if (data.warning) {
+                    keyStatusMsg.textContent = "Chave válida (limite temporário atingido).";
+                    keyStatusMsg.style.color = "var(--accent-warning)";
+                    showToast(data.warning, "warning");
+                } else {
+                    keyStatusMsg.textContent = "Chave de API válida!";
+                    keyStatusMsg.style.color = "var(--accent-success)";
+                    showToast("Chave de API validada e salva com sucesso!", "success");
+                }
                 await loadModels(apiKey);
             } else {
                 keyStatusMsg.style.display = "block";
@@ -670,6 +676,10 @@ document.addEventListener("DOMContentLoaded", () => {
             toast.style.borderLeft = "4px solid var(--accent-success)";
             toastIcon.setAttribute("data-lucide", "check-circle-2");
             toastIcon.style.color = "var(--accent-success)";
+        } else if (type === "warning") {
+            toast.style.borderLeft = "4px solid var(--accent-warning)";
+            toastIcon.setAttribute("data-lucide", "alert-circle");
+            toastIcon.style.color = "var(--accent-warning)";
         } else if (type === "danger") {
             toast.style.borderLeft = "4px solid var(--accent-danger)";
             toastIcon.setAttribute("data-lucide", "alert-triangle");
