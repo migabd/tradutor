@@ -12,6 +12,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const customModelInput = document.getElementById("custom-model");
     const voiceSelect = document.getElementById("voice-select");
     const audioDuckingInput = document.getElementById("audio-ducking");
+    const toggleAdvancedBtn = document.getElementById("toggle-advanced-btn");
+    const advancedContent = document.getElementById("advanced-content");
+    const youtubeCookiesInput = document.getElementById("youtube-cookies");
     const startDubbingBtn = document.getElementById("start-dubbing-btn");
 
     const welcomeState = document.getElementById("welcome-state");
@@ -106,6 +109,16 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Toggle advanced collapsible settings
+    toggleAdvancedBtn.addEventListener("click", () => {
+        const isOpen = toggleAdvancedBtn.classList.toggle("open");
+        if (isOpen) {
+            advancedContent.classList.remove("hidden");
+        } else {
+            advancedContent.classList.add("hidden");
+        }
+    });
+
     // Start Dubbing Pipeline
     startDubbingBtn.addEventListener("click", async () => {
         const apiKey = localStorage.getItem("gemini_api_key") || apiKeyInput.value.trim();
@@ -113,6 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let model = modelSelect.value;
         const voice = voiceSelect.value;
         const ducking = audioDuckingInput.checked;
+        const cookies = youtubeCookiesInput.value.trim();
 
         if (model === "custom") {
             model = customModelInput.value.trim();
@@ -150,7 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     "Content-Type": "application/json",
                     "X-Gemini-Key": apiKey
                 },
-                body: JSON.stringify({ url, voice, ducking, model })
+                body: JSON.stringify({ url, voice, ducking, model, cookies })
             });
 
             if (!response.ok) {

@@ -947,3 +947,75 @@ video {
     0%, 100% { opacity: 0.4; }
     50% { opacity: 1; }
 }
+
+/* Advanced Collapsible Settings */
+.advanced-section {
+    margin-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 0.75rem;
+}
+
+.advanced-toggle {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    cursor: pointer;
+    padding: 0.25rem 0;
+    transition: var(--transition-smooth);
+}
+
+.advanced-toggle:hover {
+    color: var(--text-primary);
+}
+
+.advanced-toggle i {
+    width: 1rem;
+    height: 1rem;
+    transition: var(--transition-smooth);
+}
+
+.advanced-toggle.open #advanced-chevron {
+    transform: rotate(180deg);
+}
+
+.advanced-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.label-help {
+    cursor: help;
+    font-size: 0.8rem;
+    color: var(--accent-cyan);
+    margin-left: 0.25rem;
+}
+
+textarea {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    padding: 0.8rem 1rem;
+    border-radius: 12px;
+    font-family: monospace;
+    font-size: 0.8rem;
+    transition: var(--transition-smooth);
+    outline: none;
+    resize: vertical;
+}
+
+textarea:focus {
+    border-color: var(--accent-indigo);
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.25);
+    background: rgba(0, 0, 0, 0.4);
+}
+

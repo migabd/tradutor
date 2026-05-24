@@ -98,7 +98,7 @@ class VideoDubber:
             print(f"Error getting duration: {e}")
             return 0.0
 
-    def download_youtube_video(self, url: str, temp_dir: Path) -> Path:
+    def download_youtube_video(self, url: str, temp_dir: Path, cookies: str = "") -> Path:
         """Download YouTube video using yt-dlp."""
         video_output = temp_dir / "original_video.mp4"
         ydl_opts = {
@@ -106,8 +106,21 @@ class VideoDubber:
             'outtmpl': str(video_output),
             'quiet': True,
             'no_warnings': True,
+            'nocheckcertificate': True,
+            'headers': {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.5',
+                'Referer': 'https://www.youtube.com/',
+            }
         }
         
+        if cookies.strip():
+            cookies_file = temp_dir / "cookies.txt"
+            with open(cookies_file, "w", encoding="utf-8") as f:
+                f.write(cookies)
+            ydl_opts['cookiefile'] = str(cookies_file)
+            
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
             
@@ -357,7 +370,7 @@ class VideoDubber:
         subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
         return output_path
 
-    def run_dubbing_pipeline(self, task_id: str, url: str, voice_name: str, ducking: bool = True):
+    def run_dubbing_pipeline(self, task_id: str, url: str, voice_name: str, ducking: bool = True, cookies: str = ""):
         """Execute the entire dubbing pipeline from YouTube download to final video."""
         temp_dir = self.workspace / "temp" / task_id
         temp_dir.mkdir(parents=True, exist_ok=True)
@@ -369,7 +382,7 @@ class VideoDubber:
         try:
             # STEP 1: Download Video
             self._update_status(task_id, "processing", 15, "Baixando vídeo do YouTube...")
-            original_video = self.download_youtube_video(url, temp_dir)
+            original_video = self.download_youtube_video(url, temp_dir, cookies=cookies)
             original_duration = self._get_video_duration(original_video)
             
             # Cache the original video for segment regeneration

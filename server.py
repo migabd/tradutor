@@ -27,6 +27,7 @@ class DubRequest(BaseModel):
     voice: str = "Puck"  # Puck, Charon, Aoede, Fenrir, Kore
     ducking: bool = True
     model: str = "gemini-2.0-flash"
+    cookies: str = ""
 
 class RegenerateRequest(BaseModel):
     task_id: str
@@ -79,7 +80,8 @@ async def start_dubbing(
         task_id=task_id,
         url=req.url,
         voice_name=req.voice,
-        ducking=req.ducking
+        ducking=req.ducking,
+        cookies=req.cookies
     )
     
     return {"task_id": task_id, "status": "processing"}

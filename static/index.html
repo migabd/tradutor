@@ -104,6 +104,21 @@
                     </label>
                 </div>
 
+                <!-- Collapsible Advanced Settings -->
+                <div class="config-section advanced-section">
+                    <button type="button" id="toggle-advanced-btn" class="advanced-toggle">
+                        <span>Configurações Avançadas</span>
+                        <i data-lucide="chevron-down" id="advanced-chevron"></i>
+                    </button>
+                    <div id="advanced-content" class="advanced-content hidden">
+                        <label class="input-label" for="youtube-cookies" style="margin-top: 0.5rem;">
+                            Cookies do YouTube (Netscape format)
+                            <span class="label-help" title="Instale uma extensão como 'Get cookies.txt LOCALLY' no Chrome/Firefox, acesse o YouTube, copie o conteúdo dos cookies exportados e cole aqui para evitar bloqueios ou detecção de bot.">ℹ️</span>
+                        </label>
+                        <textarea id="youtube-cookies" placeholder="# Netscape HTTP Cookie File..." rows="5" autocomplete="off"></textarea>
+                    </div>
+                </div>
+
                 <!-- Action Button -->
                 <button id="start-dubbing-btn" class="primary-btn">
                     <span>Iniciar Dublagem Automática</span>
