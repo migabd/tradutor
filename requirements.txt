@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+google-genai
+yt-dlp
+static-ffmpeg
+pydantic
+python-multipart

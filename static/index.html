@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoiceDub AI - Dublador de Vídeos do YouTube Automatizado</title>
+    
+    <!-- Premium Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="background-decorations">
+        <div class="blob blob-purple"></div>
+        <div class="blob blob-blue"></div>
+        <div class="blob blob-pink"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <i data-lucide="sparkles" class="logo-icon"></i>
+                <span class="logo-text">VoiceDub <span class="accent-text">AI</span></span>
+            </div>
+            <div class="header-tag">
+                <span class="badge">Gemini 2.0 Neural Voice</span>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Grid -->
+        <main class="dashboard-grid">
+            <!-- Sidebar / Controls -->
+            <section class="control-panel glass-panel">
+                <h2 class="panel-title"><i data-lucide="sliders"></i> Painel de Controle</h2>
+                
+                <!-- API Key Configuration -->
+                <div class="config-section">
+                    <label class="input-label" for="api-key-input">Gemini API Key</label>
+                    <div class="input-wrapper">
+                        <i data-lucide="key" class="input-icon"></i>
+                        <input type="password" id="api-key-input" placeholder="Cole sua chave de API do Gemini..." autocomplete="off">
+                        <button id="save-key-btn" class="icon-btn" title="Verificar e Salvar"><i data-lucide="check"></i></button>
+                    </div>
+                    <span id="key-status-msg" class="status-msg">Chave de API salva localmente.</span>
+                </div>
+
+                <hr class="panel-divider">
+
+                <!-- YouTube URL Input -->
+                <div class="config-section">
+                    <label class="input-label" for="youtube-url">URL do Vídeo do YouTube</label>
+                    <div class="input-wrapper">
+                        <i data-lucide="youtube" class="input-icon yt-icon"></i>
+                        <input type="text" id="youtube-url" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off">
+                    </div>
+                </div>
+
+                <!-- Voice Settings -->
+                <div class="config-section">
+                    <label class="input-label" for="voice-select">Voz Neural do Gemini</label>
+                    <div class="select-wrapper">
+                        <i data-lucide="volume-2" class="input-icon"></i>
+                        <select id="voice-select">
+                            <option value="Puck" selected>Puck (Jovem, Masculina, Expressiva)</option>
+                            <option value="Aoede">Aoede (Clara, Feminina, Educada)</option>
+                            <option value="Charon">Charon (Calma, Masculina, Profunda)</option>
+                            <option value="Fenrir">Fenrir (Forte, Masculina, Robusta)</option>
+                            <option value="Kore">Kore (Suave, Feminina, Acolhedora)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Ducking Settings -->
+                <div class="config-section checkbox-section">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="audio-ducking" checked>
+                        <span class="checkmark"></span>
+                        <div class="checkbox-label-group">
+                            <span class="checkbox-title">Audio Ducking</span>
+                            <span class="checkbox-desc">Preserva música e efeitos do fundo original</span>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Action Button -->
+                <button id="start-dubbing-btn" class="primary-btn">
+                    <span>Iniciar Dublagem Automática</span>
+                    <i data-lucide="wand-2"></i>
+                </button>
+            </section>
+
+            <!-- Main Panel: Output and Timeline -->
+            <section class="main-panel">
+                <!-- Welcome State -->
+                <div id="welcome-state" class="glass-panel state-panel">
+                    <div class="welcome-content">
+                        <div class="welcome-illustration">
+                            <i data-lucide="video" class="ill-icon primary-glow"></i>
+                            <i data-lucide="arrow-right" class="ill-arrow"></i>
+                            <i data-lucide="languages" class="ill-icon secondary-glow"></i>
+                        </div>
+                        <h2>Pronto para Dublar</h2>
+                        <p>Cole o link de um vídeo do YouTube em inglês no painel lateral, selecione uma das fantásticas vozes neurais do Gemini e clique em "Iniciar Dublagem". Nosso sistema irá transcrever, traduzir e dublar o vídeo mantendo a sincronia temporal!</p>
+                        
+                        <div class="example-links">
+                            <span class="example-title">Links rápidos para testar:</span>
+                            <button class="example-link-btn" data-url="https://www.youtube.com/watch?v=yYn9Nlq2pws">Short Trailer (Cyberpunk)</button>
+                            <button class="example-link-btn" data-url="https://www.youtube.com/watch?v=wX-y0wWk63Y">Science Clip (Veritasium)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress State -->
+                <div id="progress-state" class="glass-panel state-panel hidden">
+                    <h3 class="panel-subtitle"><i data-lucide="loader" class="spin"></i> Processando Vídeo</h3>
+                    
+                    <div class="progress-container">
+                        <div class="progress-bar-wrapper">
+                            <div id="main-progress-bar" class="progress-bar" style="width: 5%"></div>
+                        </div>
+                        <div class="progress-meta">
+                            <span id="progress-percent">5%</span>
+                            <span id="progress-message">Iniciando pipeline de dublagem...</span>
+                        </div>
+                    </div>
+
+                    <div class="stepper">
+                        <div class="step active" id="step-download">
+                            <div class="step-icon"><i data-lucide="download"></i></div>
+                            <span class="step-label">Download do YouTube</span>
+                        </div>
+                        <div class="step" id="step-extract">
+                            <div class="step-icon"><i data-lucide="scissors"></i></div>
+                            <span class="step-label">Extração de Áudio</span>
+                        </div>
+                        <div class="step" id="step-transcribe">
+                            <div class="step-icon"><i data-lucide="file-audio"></i></div>
+                            <span class="step-label">Transcrição e Tradução</span>
+                        </div>
+                        <div class="step" id="step-voice">
+                            <div class="step-icon"><i data-lucide="mic"></i></div>
+                            <span class="step-label">Dublagem e Mixagem</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results State -->
+                <div id="results-state" class="state-panel hidden">
+                    <div class="video-section glass-panel">
+                        <div class="video-header">
+                            <h3 class="panel-subtitle"><i data-lucide="play-circle" class="accent-text"></i> Vídeo Dublado</h3>
+                            <a id="download-video-btn" href="#" class="action-btn download-btn" download>
+                                <i data-lucide="download-cloud"></i> Baixar Vídeo Completo
+                            </a>
+                        </div>
+                        
+                        <div class="players-container">
+                            <div class="player-wrapper">
+                                <span class="player-badge">Versão Dublada</span>
+                                <video id="dubbed-video-player" controls width="100%"></video>
+                            </div>
+                            <div class="player-wrapper">
+                                <span class="player-badge secondary">Vídeo Original</span>
+                                <video id="original-video-player" controls width="100%"></video>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timeline & Segments Editor -->
+                    <div class="segments-section glass-panel">
+                        <div class="segments-header">
+                            <div>
+                                <h3 class="panel-subtitle"><i data-lucide="edit-3"></i> Editor de Tradução & Voz</h3>
+                                <p class="panel-desc">Ajuste o texto traduzido e re-gere vozes específicas se desejar um tom diferente ou ajustes na tradução.</p>
+                            </div>
+                            <div class="segments-actions">
+                                <span class="badge info-badge"><i data-lucide="info" class="icon-small"></i> Clique em salvar para re-gerar a voz</span>
+                            </div>
+                        </div>
+
+                        <div id="segments-timeline" class="segments-timeline">
+                            <!-- Segments dynamically injected here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden">
+        <i id="toast-icon" data-lucide="info"></i>
+        <span id="toast-msg">Mensagem padrão</span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

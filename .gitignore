@@ -1,0 +1,24 @@
+# Ignore python compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.env
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Project-specific generated directories
+output/
+tasks/
+temp/
+
+# IDE configurations
+.vscode/
+.idea/
