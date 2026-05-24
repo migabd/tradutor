@@ -56,6 +56,47 @@ async def check_key(req: KeyCheckRequest):
     except Exception as e:
         return {"valid": False, "error": str(e)}
 
+@app.get("/api/models")
+async def list_models(x_gemini_key: str = Header(None, alias="X-Gemini-Key")):
+    """List all available Gemini models for the provided API key."""
+    if not x_gemini_key:
+        raise HTTPException(status_code=400, detail="Gemini API Key é obrigatória.")
+    try:
+        client = genai.Client(api_key=x_gemini_key)
+        models = []
+        for m in client.models.list():
+            name = m.name
+            display_id = name.replace("models/", "") if name.startswith("models/") else name
+            
+            # Filter for models containing 'gemini'
+            if "gemini" in display_id.lower():
+                models.append({
+                    "id": display_id,
+                    "name": m.display_name or display_id,
+                    "description": m.description or ""
+                })
+        
+        # Prioritize 2.0-flash, then 2.0-flash-lite, then 2.0, 1.5-pro, 1.5-flash
+        def sort_key(model):
+            mid = model["id"].lower()
+            if "gemini-2.0-flash" in mid and "lite" not in mid:
+                return (0, mid)
+            elif "gemini-2.0-flash-lite" in mid:
+                return (1, mid)
+            elif "gemini-2.0" in mid:
+                return (2, mid)
+            elif "gemini-1.5-pro" in mid:
+                return (3, mid)
+            elif "gemini-1.5-flash" in mid:
+                return (4, mid)
+            return (5, mid)
+            
+        models.sort(key=sort_key)
+        return {"models": models}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/api/dub")
 async def start_dubbing(
     req: DubRequest, 

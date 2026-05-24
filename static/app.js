@@ -49,6 +49,68 @@ document.addEventListener("DOMContentLoaded", () => {
         keyStatusMsg.style.display = "block";
         keyStatusMsg.textContent = "Chave de API salva localmente.";
         keyStatusMsg.style.color = "var(--accent-success)";
+        loadModels(savedKey);
+    }
+
+    async function loadModels(apiKey) {
+        if (!apiKey) return;
+        
+        try {
+            const response = await fetch("/api/models", {
+                method: "GET",
+                headers: { "X-Gemini-Key": apiKey }
+            });
+            
+            if (!response.ok) {
+                throw new Error("Erro ao carregar modelos.");
+            }
+            
+            const data = await response.json();
+            if (data.models && data.models.length > 0) {
+                // Clear select options
+                modelSelect.innerHTML = "";
+                
+                data.models.forEach(model => {
+                    const opt = document.createElement("option");
+                    opt.value = model.id;
+                    
+                    // Format display name nicely
+                    let displayName = model.name;
+                    if (model.id === "gemini-2.0-flash") {
+                        displayName += " ⭐";
+                    } else if (model.id === "gemini-2.0-flash-lite") {
+                        displayName += " ⚡";
+                    }
+                    
+                    opt.textContent = `${displayName} (${model.id})`;
+                    modelSelect.appendChild(opt);
+                });
+                
+                // Add custom option at the end
+                const customOpt = document.createElement("option");
+                customOpt.value = "custom";
+                customOpt.textContent = "Outro Modelo (Digitar ID...)";
+                modelSelect.appendChild(customOpt);
+                
+                // Set default or restore previous selection
+                const prevModel = localStorage.getItem("selected_gemini_model") || "gemini-2.0-flash";
+                // Check if prevModel exists in options
+                let exists = Array.from(modelSelect.options).some(opt => opt.value === prevModel);
+                if (exists) {
+                    modelSelect.value = prevModel;
+                } else if (prevModel && prevModel !== "gemini-2.0-flash" && prevModel !== "gemini-2.0-flash-lite" && prevModel !== "custom") {
+                    // It was a custom model, select custom option and show input
+                    modelSelect.value = "custom";
+                    customModelInput.value = prevModel;
+                    customModelWrapper.classList.remove("hidden");
+                } else {
+                    modelSelect.value = "gemini-2.0-flash";
+                }
+            }
+        } catch (err) {
+            console.error("Error loading models:", err);
+            showToast("Não foi possível listar todos os modelos. Usando os modelos padrão.", "info");
+        }
     }
 
     // Save & Verify API Key
@@ -77,6 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 keyStatusMsg.textContent = "Chave de API válida!";
                 keyStatusMsg.style.color = "var(--accent-success)";
                 showToast("Chave de API validada e salva com sucesso!", "success");
+                await loadModels(apiKey);
             } else {
                 keyStatusMsg.style.display = "block";
                 keyStatusMsg.textContent = "Chave inválida. Verifique e tente novamente.";
