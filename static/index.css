@@ -1019,3 +1019,81 @@ textarea:focus {
     background: rgba(0, 0, 0, 0.4);
 }
 
+/* Cookies Upload Styles */
+.cookies-upload-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.upload-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: var(--transition-smooth);
+    width: 100%;
+}
+
+.upload-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent-indigo);
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.15);
+}
+
+.cookies-status-msg {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 0.8rem;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 8px;
+    color: var(--accent-success);
+    font-size: 0.8rem;
+}
+
+.cookies-status-msg.error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: var(--accent-danger);
+}
+
+.cookies-status-msg .status-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cookies-status-msg .status-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+.cookies-status-msg .clear-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-smooth);
+}
+
+.cookies-status-msg .clear-btn:hover {
+    color: var(--accent-danger);
+    background: rgba(239, 68, 68, 0.1);
+}
+

@@ -14,7 +14,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const audioDuckingInput = document.getElementById("audio-ducking");
     const toggleAdvancedBtn = document.getElementById("toggle-advanced-btn");
     const advancedContent = document.getElementById("advanced-content");
-    const youtubeCookiesInput = document.getElementById("youtube-cookies");
+    const cookiesFileInput = document.getElementById("cookies-file-input");
+    const uploadCookiesBtn = document.getElementById("upload-cookies-btn");
+    const cookiesStatusMsg = document.getElementById("cookies-status-msg");
+    const cookiesFilename = document.getElementById("cookies-filename");
+    const clearCookiesBtn = document.getElementById("clear-cookies-btn");
     const startDubbingBtn = document.getElementById("start-dubbing-btn");
 
     const welcomeState = document.getElementById("welcome-state");
@@ -41,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let toastTimeout = null;
     let activeStopAtEnd = null;
     let syncListeners = { onPlay: null, onPause: null, onSeeking: null };
+    let uploadedCookiesString = "";
 
     // Load saved API Key from localStorage
     const savedKey = localStorage.getItem("gemini_api_key");
@@ -214,6 +219,56 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // YouTube Cookies File Upload
+    uploadCookiesBtn.addEventListener("click", () => {
+        cookiesFileInput.click();
+    });
+
+    cookiesFileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            uploadedCookiesString = event.target.result;
+            const sizeInKb = (file.size / 1024).toFixed(1);
+            cookiesFilename.textContent = `${file.name} (${sizeInKb} KB)`;
+            cookiesStatusMsg.classList.remove("hidden", "error");
+            
+            const statusIcon = cookiesStatusMsg.querySelector(".status-icon");
+            if (statusIcon) {
+                statusIcon.setAttribute("data-lucide", "file-check");
+            }
+            lucide.createIcons();
+            
+            showToast("Arquivo de cookies carregado com sucesso!", "success");
+        };
+
+        reader.onerror = () => {
+            uploadedCookiesString = "";
+            cookiesFilename.textContent = "Erro ao ler o arquivo";
+            cookiesStatusMsg.classList.add("error");
+            cookiesStatusMsg.classList.remove("hidden");
+            
+            const statusIcon = cookiesStatusMsg.querySelector(".status-icon");
+            if (statusIcon) {
+                statusIcon.setAttribute("data-lucide", "alert-circle");
+            }
+            lucide.createIcons();
+            
+            showToast("Não foi possível ler o arquivo de cookies.", "danger");
+        };
+
+        reader.readAsText(file);
+    });
+
+    clearCookiesBtn.addEventListener("click", () => {
+        uploadedCookiesString = "";
+        cookiesFileInput.value = "";
+        cookiesStatusMsg.classList.add("hidden");
+        showToast("Cookies removidos.", "info");
+    });
+
     // Start Dubbing Pipeline
     startDubbingBtn.addEventListener("click", async () => {
         const apiKey = localStorage.getItem("gemini_api_key") || apiKeyInput.value.trim();
@@ -221,7 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let model = modelSelect.value;
         const voice = voiceSelect.value;
         const ducking = audioDuckingInput.checked;
-        const cookies = youtubeCookiesInput.value.trim();
+        const cookies = uploadedCookiesString;
 
         if (model === "custom") {
             model = customModelInput.value.trim();
