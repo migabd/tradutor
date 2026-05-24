@@ -116,7 +116,7 @@ class VideoDubber:
             'nocheckcertificate': True,
             'extractor_args': {
                 'youtube': {
-                    'player_client': ['android', 'ios', 'web']
+                    'player_client': ['web_creator', 'tv', 'android', 'ios', 'web']
                 }
             },
             'headers': {
