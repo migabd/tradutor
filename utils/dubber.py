@@ -99,10 +99,17 @@ class VideoDubber:
             return 0.0
 
     def download_youtube_video(self, url: str, temp_dir: Path, cookies: str = "") -> Path:
-        """Download YouTube video using yt-dlp."""
+        """Download YouTube video using yt-dlp with multiple robust format fallbacks."""
         video_output = temp_dir / "original_video.mp4"
+        
+        # We will try multiple format options sequentially to guarantee a successful download
+        formats_to_try = [
+            'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/mp4/best',
+            'best[ext=mp4]/mp4',
+            'best'
+        ]
+        
         ydl_opts = {
-            'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4',
             'outtmpl': str(video_output),
             'quiet': True,
             'no_warnings': True,
@@ -121,17 +128,38 @@ class VideoDubber:
                 f.write(cookies)
             ydl_opts['cookiefile'] = str(cookies_file)
             
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([url])
-            
-        if not video_output.exists():
-            # Fallback if merger failed or format wasn't found
-            ydl_opts['format'] = 'best'
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                ydl.download([url])
+        success = False
+        last_error = None
+        
+        for fmt in formats_to_try:
+            ydl_opts['format'] = fmt
+            try:
+                print(f"Tentando baixar vídeo com formato: {fmt}")
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    ydl.download([url])
+                if video_output.exists():
+                    success = True
+                    break
+            except Exception as e:
+                last_error = e
+                print(f"Falha ao baixar no formato '{fmt}': {e}")
                 
-        if not video_output.exists():
-            raise FileNotFoundError("Falha ao baixar o vídeo do YouTube.")
+        # If the file exists but has a different extension because yt-dlp appended it (e.g. original_video.mp4.webm)
+        # we check if any file starting with original_video exists in temp_dir
+        if not success or not video_output.exists():
+            for f in temp_dir.glob("original_video.*"):
+                if f.is_file() and f.suffix != ".txt" and f.suffix != ".json":
+                    # Rename it to .mp4 so ffmpeg and other processing methods work properly
+                    try:
+                        f.rename(video_output)
+                        success = True
+                        break
+                    except Exception:
+                        pass
+                        
+        if not success or not video_output.exists():
+            error_details = str(last_error) if last_error else "Formato não disponível ou falha na conexão."
+            raise ValueError(f"Falha ao baixar o vídeo do YouTube: {error_details}")
             
         return video_output
 
